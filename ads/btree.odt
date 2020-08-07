@@ -1,0 +1,360 @@
+Experiment 7
+B Trees
+
+Aim: 
+Operations on B tree: Insert an element, display tree; order of tree is 5.
+
+Theory:
+1. What is a B tree?
+A B-tree is a tree data structure that keeps data sorted and allows searches, insertions, and deletions in logarithmic amortized time. Unlike self-balancing binary search trees, it is optimized for systems that read and write large blocks of data. It is most commonly used in database and file systems.
+
+2. Important properties of a B-tree:
+B-tree nodes have many more than two children.
+A B-tree node may contain more than just a single element.
+
+3. Techniques in B tree:
+Search:
+Search is similar to the search in Binary Search Tree. Let the key to be searched be k. We start from the root and recursively traverse down. For every visited non-leaf node, if the node has the key, we simply return the node. Otherwise, we recur down to the appropriate child (The child which is just before the first greater key) of the node. If we reach a leaf node and don’t find k in the leaf node, we return NULL.
+Traverse:
+Traversal is also similar to Inorder traversal of Binary Tree. We start from the leftmost child, recursively print the leftmost child, then repeat the same process for remaining children and keys. In the end, recursively print the rightmost child.
+
+Program:
+#include <stdio.h>
+#include <stdlib.h>
+#define MAX 4
+#define MIN 2
+typedef struct node {
+int val[MAX + 1], count;
+struct node *link[MAX + 1];
+}node;
+node *root;
+node * createNode(int , node *);
+void addValToNode(int, int, node *, node *);
+void splitNode (int, int *, int , node *,node *, node **);
+int setValueInNode(int, int *,node *, node **);
+void insertion(int val);
+void traversal(node *);
+void main() {
+int val, ch;
+while (1) {
+printf("1. Insertion\t2. Traversal\n");
+printf("3. Exit\nEnter your choice:");
+scanf("%d", &ch);
+switch (ch) {
+case 1:
+printf("Enter your input:");
+scanf("%d", &val);
+insertion(val);
+break;
+case 2:
+traversal(root);
+break;
+case 3:
+exit(0);
+default:
+printf("Invalid option!!\n");
+break;
+}
+printf("\n");
+}
+}
+
+node * createNode(int val, node *child) {
+node *newNode;
+newNode = (node *)malloc(sizeof(node));
+newNode->val[1] = val;
+newNode->count = 1;
+newNode->link[0] = root;
+newNode->link[1] = child;
+return newNode;
+}
+
+void splitNode (int val, int *pval, int pos, node *head,
+node *child, node **newNode) {
+int median, j;
+
+if (pos > MIN)
+median = MIN + 1;
+else
+median = MIN;
+
+*newNode = (node *)malloc(sizeof(node));
+j = median + 1;
+while (j <= MAX) {
+(*newNode)->val[j - median] = head->val[j];
+(*newNode)->link[j - median] = head->link[j];
+j++;
+}
+head->count = median;
+(*newNode)->count = MAX - median;
+
+if (pos <= MIN) {
+addValToNode(val, pos, head, child);
+} else {
+addValToNode(val, pos - median, *newNode, child);
+}
+*pval = head->val[head->count];
+(*newNode)->link[0] = head->link[head->count];
+head->count--;
+}
+void insertion(int val) {
+int flag, i;
+node *child;
+
+flag = setValueInNode(val, &i, root, &child);
+if (flag)
+root = createNode(i, child);
+}
+int setValueInNode(int val, int *pval,
+node *head, node **child) {
+
+int pos;
+if (!head) {
+*pval = val;
+*child = NULL;
+return 1;
+}
+
+if (val < head->val[1]) {
+pos = 0;
+} else {
+for (pos = head->count;
+(val < head->val[pos] && pos > 1); pos--);
+if (val == head->val[pos]) {
+printf("Duplicates not allowed\n");
+return 0;
+}
+}
+if (setValueInNode(val, pval, head->link[pos], child)) {
+if (head->count < MAX) {
+addValToNode(*pval, pos, head, *child);
+} else {
+splitNode(*pval, pval, pos, head, *child, child);
+return 1;
+}
+}
+return 0;
+}
+
+void addValToNode(int val, int pos, node *head,
+node *child) {
+int j = head->count;
+while (j > pos) {
+head->val[j + 1] = head->val[j];
+head->link[j + 1] = head->link[j];
+j--;
+}
+head->val[j + 1] = val;
+head->link[j + 1] = child;
+head->count++;
+}
+void traversal(node *myNode) {
+int i;
+if (myNode) {
+for (i = 0; i < myNode->count; i++) {
+traversal(myNode->link[i]);
+printf("%d ", myNode->val[i + 1]);
+}
+traversal(myNode->link[i]);
+}
+}
+
+
+Output:
+#include <stdio.h>
+#include <stdlib.h>
+#define MAX 4
+#define MIN 2
+typedef struct node {
+int val[MAX + 1], count;
+struct node *link[MAX + 1];
+}node;
+node *root;
+node * createNode(int , node *);
+void addValToNode(int, int, node *, node *);
+void splitNode (int, int *, int , node *,node *, node **);
+int setValueInNode(int, int *,node *, node **);
+void insertion(int val);
+void traversal(node *);
+void main() {
+int val, ch;
+while (1) {
+printf("1. Insertion\t2. Traversal\n");
+printf("3. Exit\nEnter your choice:");
+scanf("%d", &ch);
+switch (ch) {
+case 1:
+printf("Enter your input:");
+scanf("%d", &val);
+insertion(val);
+break;
+case 2:
+traversal(root);
+break;
+case 3:
+exit(0);
+default:
+printf("Invalid option!!\n");
+break;
+}
+printf("\n");
+}
+}
+
+node * createNode(int val, node *child) {
+node *newNode;
+newNode = (node *)malloc(sizeof(node));
+newNode->val[1] = val;
+newNode->count = 1;
+newNode->link[0] = root;
+newNode->link[1] = child;
+return newNode;
+}
+
+void splitNode (int val, int *pval, int pos, node *head,
+node *child, node **newNode) {
+int median, j;
+
+if (pos > MIN)
+median = MIN + 1;
+else
+median = MIN;
+
+*newNode = (node *)malloc(sizeof(node));
+j = median + 1;
+while (j <= MAX) {
+(*newNode)->val[j - median] = head->val[j];
+(*newNode)->link[j - median] = head->link[j];
+j++;
+}
+head->count = median;
+(*newNode)->count = MAX - median;
+
+if (pos <= MIN) {
+addValToNode(val, pos, head, child);
+} else {
+addValToNode(val, pos - median, *newNode, child);
+}
+*pval = head->val[head->count];
+(*newNode)->link[0] = head->link[head->count];
+head->count--;
+}
+void insertion(int val) {
+int flag, i;
+node *child;
+
+flag = setValueInNode(val, &i, root, &child);
+if (flag)
+root = createNode(i, child);
+}
+int setValueInNode(int val, int *pval,
+node *head, node **child) {
+
+int pos;
+if (!head) {
+*pval = val;
+*child = NULL;
+return 1;
+}
+
+if (val < head->val[1]) {
+pos = 0;
+} else {
+for (pos = head->count;
+(val < head->val[pos] && pos > 1); pos--);
+if (val == head->val[pos]) {
+printf("Duplicates not allowed\n");
+return 0;
+}
+}
+if (setValueInNode(val, pval, head->link[pos], child)) {
+if (head->count < MAX) {
+addValToNode(*pval, pos, head, *child);
+} else {
+splitNode(*pval, pval, pos, head, *child, child);
+return 1;
+}
+}
+return 0;
+}
+
+void addValToNode(int val, int pos, node *head,
+node *child) {
+int j = head->count;
+while (j > pos) {
+head->val[j + 1] = head->val[j];
+head->link[j + 1] = head->link[j];
+j--;
+}
+head->val[j + 1] = val;
+head->link[j + 1] = child;
+head->count++;
+}
+void traversal(node *myNode) {
+int i;
+if (myNode) {
+for (i = 0; i < myNode->count; i++) {
+traversal(myNode->link[i]);
+printf("%d ", myNode->val[i + 1]);
+}
+traversal(myNode->link[i]);
+}
+}
+1. Insertion    2. Traversal
+3. Exit
+Enter your choice:1
+Enter your input:6
+
+1. Insertion    2. Traversal
+3. Exit
+Enter your choice:1
+Enter your input:9
+
+1. Insertion    2. Traversal
+3. Exit
+Enter your choice:1
+Enter your input:8
+
+1. Insertion    2. Traversal
+3. Exit
+Enter your choice:1
+Enter your input:2
+
+1. Insertion    2. Traversal
+3. Exit
+Enter your choice:1
+Enter your input:34
+
+1. Insertion    2. Traversal
+3. Exit
+Enter your choice:1
+Enter your input:21
+
+1. Insertion    2. Traversal
+3. Exit
+Enter your choice:1
+Enter your input:90
+
+1. Insertion    2. Traversal
+3. Exit
+Enter your choice:1
+Enter your input:37
+
+1. Insertion    2. Traversal
+3. Exit
+Enter your choice:2
+2 6 8 9 21 34 37 90
+1. Insertion    2. Traversal
+3. Exit
+Enter your choice:3
+
+
+
+Conclusion:
+Thus we have successfully created as well as displayed a B tree of order 5.
+
+
+
+
+
+
